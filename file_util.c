@@ -5,9 +5,12 @@ DESCRIPTION:
     file utility functions to handle and support file operations. 
 AUTHORS:
     Trevor Zabilowicz - zab5682@calu.edu
+    Jared Rohrbaugh   - roh2827@calu.edu
+    Ryan Lemmon       - lem8289@calu.edu
 COURSE:
     Language Translations - CSC 460
     Dr. Pyzdrowski
+    Group 4
 
 *******************************************************************************/
 
@@ -180,10 +183,16 @@ bool process_output(char *outfile) {
     return proc_status;
 }
 
-bool process_files(int argc, char *argv[]) {
+bool init_files(int argc, char *argv[]) {
     //File Process Flags 
     bool input_flag = false;
     bool output_flag = false;
+
+    input_pos = 0;
+    line_count = 1;
+    lexical_errors = 0;
+    syntax_errors = 0;
+    error_flag = false;
 
     //Process the number of arguements 
     if (argc == 1) {
@@ -208,6 +217,10 @@ bool process_files(int argc, char *argv[]) {
         //If both files are processed, open temp file
         bool temp_flag = process_tempfile();
 
+        //Write the first line number to the listing file 
+        fprintf(list_file, "%d   ", line_count);
+        line_count += 1;
+
         if (temp_flag == true) {
             return true;
         }
@@ -220,7 +233,16 @@ bool process_files(int argc, char *argv[]) {
     }
 }
 
-bool close_files() {
+//Write to output file
+void write_output(FILE *out_file, char* token_id, char* token_buffer) {
+    int w[2] = {25, 25};
+
+    //Write in formatted output 
+    fprintf(out_file, "Expected Token:    %-*s", w[0], token_id);
+    fprintf(out_file, "Actual Token:    %-*s\n", w[1], token_buffer);
+}
+
+bool wrap_up() {
     //Check if files closed properly
     if (fclose(input_file) && fclose(output_file) && fclose(list_file) && fclose(temp_file)) {
         return true;

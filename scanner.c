@@ -6,14 +6,16 @@ DESCRIPTION:
     and detect errors. Once the scanner is complete. It writes to output files.
 AUTHORS:
     Trevor Zabilowicz - zab5682@calu.edu
+    Jared Rohrbaugh   - roh2827@calu.edu
+    Ryan Lemmon       - lem8289@calu.edu
 COURSE:
     Language Translations - CSC 460
     Dr. Pyzdrowski
+    Group 4
 
 *******************************************************************************/
 
 #include "scanner.h"
-#include "file_util.h"
 
 void clear_buffer(char *buffer, int length) {
     memset(buffer, 0, length);
@@ -134,7 +136,7 @@ token check_number(char *buffer) {
 }
 
 //Return the name of the token
-char* token_ident(token t) {
+char* match(token t) {
     switch (t) {
         case BEGIN: return "BEGIN";
         case END: return "END";
@@ -172,85 +174,44 @@ char* token_ident(token t) {
     };
 }
 
-//Return the symbol identity 
-char* symbol_ident(token t) {
-    switch (t) {
-        case LPAREN: return "LPAREN";
-        case RPAREN: return "RPAREN";
-        case SEMICOLON: return "SEMICOLON";
-        case COMMA: return "COMMA";
-        case ASSIGNOP: return "ASSIGNOP";
-        case PLUSOP: return "PLUSOP";
-        case MINUSOP: return "MINUSOP";
-        case MULTOP: return "MULTOP";
-        case DIVOP: return "DIVOP";
-        case NOTOP: return "NOTOP";
-        case ERROR: return "ERROR";
-        case LESSOP: return "LESSOP";
-        case LESSEQUALOP: return "LESSEQUALOP";
-        case GREATEROP: return "GREATEROP";
-        case GREATEREQUALOP: return "GREATEREQUALOP";
-        case EQUALOP: return "EQUALOP";
-        case NOTEQUALOP: return "NOTEQUALOP";
-        default: return "ERROR"; 
-    };
+//Writes the errors to the listing file
+void write_errors() {
+    //Write Lexical Error line
+    fprintf(list_file, "\n\n%d   Lexical Errors.", lexical_errors);
 }
 
-//Return the number identity
-char* number_ident(token t) {
-    switch (t) {
-        case INTLITERAL: return "INTLITERAL";
-        default: return "ERROR";
-    };
-}
-
-//Write to output file
-void write_output(FILE *out_file, token token_num, char *token_id, char *token_buffer) {
-    int w[3] = {2, 15, 15};
-
-    //Formatted Output File
-    fprintf(out_file, "token number:  %-*d", w[0], token_num);
-    fprintf(out_file, "     token type:  %-*s", w[1], token_id);
-    fprintf(out_file, "     actual token:   %-*s\n", w[2], token_buffer);
-}
-
-bool scanner(FILE *input_file, FILE *output_file, FILE *list_file) {
+char* next_token() {
     //Scanner Variables
-    int lexical_errors;
     int token_num;
     int  i, j, k; 
-    int line_count = 1;
     char lexeme;
     char next_lexeme;
-    char symbol_buffer[TOKEN];
-    char token_buffer[TOKEN];
-    char number_buffer[TOKEN];
+    static char symbol_buffer[TOKEN];
+    static char token_buffer[TOKEN];
+    static char number_buffer[TOKEN];
     char lex_error_sequence[TOKEN];
-    char *token_id;
+    char* token_id;
+    char* input_token;
     bool comment_flag = false;
     bool error_flag = false;
     bool process_symbol = false;
     bool process_token = false;
     bool process_number = false;
+    bool read_flag = true;
 
     //Variable Initialization
     i = 0;
     j = 0;
     k = 0;
-    lexical_errors = 0;
 
     memset(symbol_buffer, 0, TOKEN);
     memset(token_buffer, 0, TOKEN);
     memset(number_buffer, 0, TOKEN);
 
-    //Write the first line number to the listing file 
-    fprintf(list_file, "%d   ", line_count);
-    line_count += 1;
-
-    while (lexeme != EOF) {
+    while (read_flag == true) {
         lexeme = fgetc(input_file); 
 
-        //Try to process comment
+        //Process comment
         if (lexeme == '-' && comment_flag == false) {
             next_lexeme = fgetc(input_file);
             if (next_lexeme == '-') {
@@ -327,80 +288,69 @@ bool scanner(FILE *input_file, FILE *output_file, FILE *list_file) {
 
         //Recognize the token
         if (process_token == true) {
+            read_flag = false;
+            printf("TOKEN => Token Flag: %d     Number Flag: %d     Symbol Flag: %d\n", process_token, process_number, process_symbol);
+
             //Check Reserved word 
             token_num = check_reserved(token_buffer);
-            token_id = token_ident(token_num);
+            token_id = match(token_num);
 
-            //Write to output file
-            write_output(output_file, token_num, token_id, token_buffer);
             //Check Error
             if (token_num == ERROR) {
                 strcpy(lex_error_sequence, token_buffer);
                 lexical_errors += 1;
                 error_flag = true;
             }
-
-            //Clear token buffer    
-            memset(token_buffer, 0, TOKEN);
-            i = 0;
-            process_token = false;
         }
         //Recognize the number 
         if (process_number == true) {
+            read_flag = false;
+            printf("NUMBER => Token Flag: %d     Number Flag: %d     Symbol Flag: %d\n", process_token, process_number, process_symbol);
+
             //Check Valid number 
             token_num = check_number(number_buffer);
-            token_id = number_ident(token_num);
+            token_id = match(token_num);
 
-            //Write to output file 
-            write_output(output_file, token_num, token_id, number_buffer);
             //Check Error
             if (token_num == ERROR) {
                 strcpy(lex_error_sequence, number_buffer);
                 lexical_errors += 1;
                 error_flag = true;
             }
-
-            //Clear number buffer
-            memset(number_buffer, 0, TOKEN);
-            k = 0;
-            process_number = false;
         }
         //Recognize the symbol
         if (process_symbol == true) {
+            read_flag = false;
+            printf("SYMBOL => Token Flag: %d     Number Flag: %d     Symbol Flag: %d\n", process_token, process_number, process_symbol);
+
             //Check Reserved Symbol
             token_num = check_symbol(symbol_buffer);
-            token_id = symbol_ident(token_num);
+            token_id = match(token_num);
 
-            //Write to output file 
-            write_output(output_file, token_num, token_id, symbol_buffer);
             //Check Error
             if (token_num == ERROR) {
                 strcpy(lex_error_sequence, symbol_buffer);
                 lexical_errors += 1;
                 error_flag = true;
             }
-            
-            //Clear symbol buffer
-            memset(symbol_buffer, 0, TOKEN);
-            j = 0;
-            process_symbol = false;
         }
 
         //Check if EOF 
         if (lexeme == EOF) {
+            read_flag = false;
+
             //Process End of file
             token_num = SCANEOF;
-            token_id = token_ident(token_num);
-            write_output(output_file, token_num, "SCANEOF", token_id);
+            token_id = match(token_num);
 
             //Write Lexical Ettor line
             fprintf(list_file, "\n\n%d   Lexical Errors.", lexical_errors);
         }
         else {
+            fputc(lexeme, list_file);
+
             //Write to listing file 
             if (lexeme == '\n') {
-                fputc(lexeme, list_file);
-
                 //Check for errors
                 if (error_flag == true) {
                     fprintf(list_file, "Error.  %s not recognized.\n", lex_error_sequence);
@@ -413,11 +363,16 @@ bool scanner(FILE *input_file, FILE *output_file, FILE *list_file) {
                 comment_flag = false;
                 line_count += 1;
             } 
-            else {
-                fputc(lexeme, list_file);
-            }
         }
     }
 
-    return true;
+    if (process_number == true) {
+        return number_buffer;
+    }
+    if (process_token == true) {
+        return token_buffer;
+    }
+    if (process_symbol == true) {
+        return symbol_buffer;
+    }
 }

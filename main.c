@@ -5,29 +5,35 @@ DESCRIPTION:
     scanner.
 AUTHORS:
     Trevor Zabilowicz - zab5682@calu.edu
+    Jared Rohrbaugh   - roh2827@calu.edu
+    Ryan Lemmon       - lem8289@calu.edu
 COURSE:
     Language Translations - CSC 460
     Dr. Pyzdrowski
+    Group 4
 
 *******************************************************************************/
 
 #include "file_util.h"
-#include "scanner.h"
+#include "parser.h"
 
 int main (int argc, char *argv[]) {
     //Process Flags
     bool file_util_flag;
-    bool scanner_flag;
+    bool system_goal_flag;
 
-    file_util_flag = process_files(argc, argv);
+    file_util_flag = init_files(argc, argv);
     if (file_util_flag == true) {
-        scanner_flag = scanner(input_file, output_file, list_file);
+        system_goal_flag = system_goal();
 
-        if (scanner_flag == true) {
-            printf("Scanner Processed Successfully...\n");
+        if (system_goal_flag == true) {
+            printf("Paser Complete...\n");
         }
     }
-    file_util_flag = close_files();
+    else {
+        perror("Error: processing parser...\n");
+    }
+    file_util_flag = wrap_up();
 
     return 0;
 }

@@ -5,9 +5,12 @@ DESCRIPTION:
     to be fully functional.
 AUTHORS:
     Trevor Zabilowicz - zab5682@calu.edu
+    Jared Rohrbaugh   - roh2827@calu.edu
+    Ryan Lemmon       - lem8289@calu.edu
 COURSE:
     Language Translations - CSC 460
     Dr. Pyzdrowski
+    Group 4
 
 *******************************************************************************/
 
@@ -63,13 +66,10 @@ typedef enum {
 
 //Function Prototype
 void clear_buffer(char*, int);
-void write_output(FILE*, token, char*, char*);
-bool scanner(FILE*, FILE*, FILE*);
-char *token_ident(token);
-char *symbol_ident(token);
-char *number_ident(token);
+char* match(token);
 token check_reserved(char*);
 token check_symbol(char*);
 token check_number(char*);
+char* next_token();
 
 #endif

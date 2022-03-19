@@ -1,7 +1,7 @@
 begin       --a program
-a:=A & BB;
 var := (10 + 1);
 var := A-B;
+A & B;
 if 1 <> 2
 then 
 a >= b;
