@@ -25,6 +25,9 @@ COURSE:
 //Variables and Definitions
 #define FSIZE 30
 #define BUFFER 1024
+#define BUFFER 1024
+#define TOKEN 50
+
 #define READ_FILE_MODE "r"
 #define WRITE_FILE_MODE "w"
 #define INPUT_EXTENSION ".IN"
@@ -45,6 +48,19 @@ int lexical_errors;
 int syntax_errors;
 int line_count;
 bool error_flag;
+bool process_symbol;
+bool process_token;
+bool process_number;
+
+int i;     //Token Buffer Count
+int j;     //Symbol Buffer Count
+int k;     //Number Buffer Count
+
+//Buffer Definitions
+char symbol_buffer[TOKEN];
+char token_buffer[TOKEN];
+char number_buffer[TOKEN];
+char lex_error_sequence[TOKEN];
 
 FILE *input_file;
 FILE *output_file;

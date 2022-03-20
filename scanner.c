@@ -182,31 +182,14 @@ void write_errors() {
 
 char* next_token() {
     //Scanner Variables
+    bool read_flag = true;
+    bool comment_flag = false;
     int token_num;
-    int  i, j, k; 
     char lexeme;
     char next_lexeme;
-    static char symbol_buffer[TOKEN];
-    static char token_buffer[TOKEN];
-    static char number_buffer[TOKEN];
-    char lex_error_sequence[TOKEN];
     char* token_id;
-    char* input_token;
-    bool comment_flag = false;
-    bool error_flag = false;
-    bool process_symbol = false;
-    bool process_token = false;
-    bool process_number = false;
-    bool read_flag = true;
-
-    //Variable Initialization
-    i = 0;     //Token Buffer Count
-    j = 0;     //Symbol Buffer Count
-    k = 0;     //Number Buffer Count
-
-    memset(symbol_buffer, 0, TOKEN);
-    memset(token_buffer, 0, TOKEN);
-    memset(number_buffer, 0, TOKEN);
+    static char input_token[TOKEN];
+    memset(input_token, 0, TOKEN);    
 
     while (read_flag == true) {
         lexeme = fgetc(input_file); 
@@ -225,36 +208,65 @@ char* next_token() {
             }
         }
         
-        if (comment_flag == false && process_symbol == false) {
-            //Process Alpha Lexeme
+        if (comment_flag == false) {
+            //Process alpha character
             if (isalpha(lexeme) != 0) {
                 token_buffer[i] = lexeme;
                 i += 1;
 
-                //If there are lexemes in symbol or number buffer
+                //Check the symbol buffer
                 if (strlen(symbol_buffer) > 0) {
                     process_symbol = true;
                 }
+                //Check the number buffer 
                 if (strlen(number_buffer) > 0) {
                     process_number = true;
                 }
             }
-            //Not Alpha Lexeme
             else {
+                //If a token was found
                 if (strlen(token_buffer) > 0) {
                     process_token = true;
                 }
 
-                //Number lexeme
+                //Number lexeme 
                 if (isalnum(lexeme) != 0) {
+                    //Check the symbol buffer
+                    if (strlen(symbol_buffer) > 0) {
+                        process_symbol = true;
+                    }
+
                     number_buffer[k] = lexeme;
                     k += 1;
+                }
 
+                //Process Symbol character 
+                 if (isspace(lexeme) == 0 && isalnum(lexeme) == 0 && lexeme != EOF) {
+                    symbol_buffer[j] = lexeme;
+                    j += 1;
+
+                    //Check for certian SINGLE Symbols
+                    if (lexeme == '(' || lexeme == ')' || lexeme == ';' || lexeme == ',' || lexeme == '+' || lexeme == '*' || lexeme == '/' || lexeme == '!') {
+                        process_symbol = true;
+                    }
+
+                    //Check the number buffer
+                    if (strlen(number_buffer) > 0) {
+                        process_number = true;
+                    }
                     if (strlen(token_buffer) > 0) {
                         process_token = true;
                     }
+                }
+                else {
+                    if (strlen(number_buffer) > 0) {
+                        process_number = true;
+                    }
                     if (strlen(symbol_buffer) > 0) {
                         process_symbol = true;
+                    }
+                    if (strlen(token_buffer) > 0) {
+                        process_token = true;
                     }
                 }
             }
@@ -263,6 +275,8 @@ char* next_token() {
         //Recognize the token
         if (process_token == true) {
             read_flag = false;
+
+            strcpy(input_token, token_buffer);
 
             //Check Reserved word 
             token_num = check_reserved(token_buffer);
@@ -274,10 +288,16 @@ char* next_token() {
                 lexical_errors += 1;
                 error_flag = true;
             }
+
+            memset(token_buffer, 0, TOKEN);
+            i = 0;
+            process_token = false;
         }
         //Recognize the number 
         if (process_number == true) {
             read_flag = false;
+
+            strcpy(input_token, number_buffer);
 
             //Check Valid number 
             token_num = check_number(number_buffer);
@@ -289,10 +309,16 @@ char* next_token() {
                 lexical_errors += 1;
                 error_flag = true;
             }
+
+            memset(number_buffer, 0, TOKEN);
+            k = 0;
+            process_number = false;
         }
         //Recognize the symbol
         if (process_symbol == true) {
             read_flag = false;
+
+            strcpy(input_token, symbol_buffer);
 
             //Check Reserved Symbol
             token_num = check_symbol(symbol_buffer);
@@ -304,6 +330,10 @@ char* next_token() {
                 lexical_errors += 1;
                 error_flag = true;
             }
+
+            memset(symbol_buffer, 0, TOKEN);
+            j = 0;
+            process_symbol = false;
         }
 
         //Check if EOF 
@@ -332,19 +362,10 @@ char* next_token() {
                 fprintf(list_file, "%d   ", line_count);
                 //Reset comment flag
                 comment_flag = false;
-                process_symbol = false;
                 line_count += 1;
             } 
         }
     }
 
-    if (process_number == true) {
-        return number_buffer;
-    }
-    if (process_token == true) {
-        return token_buffer;
-    }
-    if (process_symbol == true) {
-        return symbol_buffer;
-    }
+    return input_token;
 }

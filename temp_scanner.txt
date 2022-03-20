@@ -1,0 +1,64 @@
+        if (comment_flag == false) {
+            //Process alpha character
+            if (isalpha(lexeme) != 0) {
+                token_buffer[i] = lexeme;
+                i += 1;
+
+                //Check the symbol buffer
+                if (strlen(symbol_buffer) > 0) {
+                    process_symbol = true;
+                }
+                //Check the number buffer 
+                if (strlen(number_buffer) > 0) {
+                    process_number = true;
+                }
+            }
+            else {
+                //If a token was found
+                if (strlen(token_buffer) > 0) {
+                    process_token = true;
+                }
+
+                //Number lexeme 
+                if (isalnum(lexeme) != 0) {
+                    //Check the symbol buffer
+                    if (strlen(symbol_buffer) > 0) {
+                        process_symbol = true;
+                    }
+
+                    number_buffer[k] = lexeme;
+                    k += 1;
+                }
+
+                //Process Symbol character 
+                 if (isspace(lexeme) == 0 && isalnum(lexeme) == 0 && lexeme != EOF) {
+                    symbol_buffer[j] = lexeme;
+                    j += 1;
+
+                    //Check for certian SINGLE Symbols
+                    if (lexeme == '(' || lexeme == ')' || lexeme == ';' || lexeme == ',' || lexeme == '+' || lexeme == '*' || lexeme == '/' || lexeme == '!') {
+                        process_symbol = true;
+                    }
+
+                    //Check the number buffer
+                    if (strlen(number_buffer) > 0) {
+                        process_number = true;
+                    }
+                    if (strlen(token_buffer) > 0) {
+                        process_token = true;
+                    }
+                }
+                else {
+                    if (strlen(number_buffer) > 0) {
+                        process_number = true;
+                    }
+                    if (strlen(symbol_buffer) > 0) {
+                        process_symbol = true;
+                    }
+                    if (strlen(token_buffer) > 0) {
+                        process_token = true;
+                    }
+                }
+                
+            }
+        }

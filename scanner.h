@@ -23,10 +23,6 @@ COURSE:
 #include <ctype.h>
 #include "file_util.h"
 
-//Variables and Definitions
-#define BUFFER 1024
-#define TOKEN 50
-
 //Enumeration of the tokens
 typedef enum {
     BEGIN,
@@ -71,5 +67,6 @@ token check_reserved(char*);
 token check_symbol(char*);
 token check_number(char*);
 char* next_token();
+char* test_next_token();
 
 #endif

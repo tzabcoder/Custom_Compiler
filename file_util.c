@@ -192,7 +192,19 @@ bool init_files(int argc, char *argv[]) {
     line_count = 1;
     lexical_errors = 0;
     syntax_errors = 0;
+    i = 0;
+    j = 0;
+    k = 0;
     error_flag = false;
+    process_token = false;
+    process_symbol = false;
+    process_number = false;
+
+    //Set Buffers
+    memset(token_buffer, 0, TOKEN);
+    memset(symbol_buffer, 0, TOKEN);
+    memset(number_buffer, 0, TOKEN);
+    memset(lex_error_sequence, 0, TOKEN);
 
     //Process the number of arguements 
     if (argc == 1) {

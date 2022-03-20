@@ -22,7 +22,7 @@ bool system_goal() {
 
     while (strcmp(t, "end") != 0) {
         t = next_token();
-        printf("%s\n", t);
+        printf("%s ", t);
     }
 
     return status;
