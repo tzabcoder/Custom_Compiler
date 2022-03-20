@@ -200,9 +200,9 @@ char* next_token() {
     bool read_flag = true;
 
     //Variable Initialization
-    i = 0;
-    j = 0;
-    k = 0;
+    i = 0;     //Token Buffer Count
+    j = 0;     //Symbol Buffer Count
+    k = 0;     //Number Buffer Count
 
     memset(symbol_buffer, 0, TOKEN);
     memset(token_buffer, 0, TOKEN);
@@ -225,62 +225,36 @@ char* next_token() {
             }
         }
         
-        if (comment_flag == false) {
-            //Process alpha character
+        if (comment_flag == false && process_symbol == false) {
+            //Process Alpha Lexeme
             if (isalpha(lexeme) != 0) {
                 token_buffer[i] = lexeme;
                 i += 1;
 
-                //Check the symbol buffer
+                //If there are lexemes in symbol or number buffer
                 if (strlen(symbol_buffer) > 0) {
                     process_symbol = true;
                 }
-                //Check the number buffer 
                 if (strlen(number_buffer) > 0) {
                     process_number = true;
                 }
             }
+            //Not Alpha Lexeme
             else {
-                //If a token was found
                 if (strlen(token_buffer) > 0) {
                     process_token = true;
                 }
 
-                //Space Lexeme  
-                if (isspace(lexeme) != 0) {
-                    //check the sumbol buffer
-                    if (strlen(symbol_buffer) > 0) {
-                        process_symbol = true;
-                    }
-                    //check the number buffer
-                    if (strlen(number_buffer) > 0) {
-                        process_number = true;
-                    }
-                }
-                //Number lexeme 
+                //Number lexeme
                 if (isalnum(lexeme) != 0) {
-                    //Check the symbol buffer
-                    if (strlen(symbol_buffer) > 0) {
-                        process_symbol = true;
-                    }
-
                     number_buffer[k] = lexeme;
                     k += 1;
-                }
 
-                //Process Symbol character 
-                if (isspace(lexeme) == 0 && isalnum(lexeme) == 0 && lexeme != EOF) {
-                    symbol_buffer[j] = lexeme;
-                    j += 1;
-
-                    //Check for certian SINGLE Symbols
-                    if (lexeme == '(' || lexeme == ')' || lexeme == ';' || lexeme == ',' || lexeme == '+' || lexeme == '*' || lexeme == '/' || lexeme == '!') {
-                        process_symbol = true;
+                    if (strlen(token_buffer) > 0) {
+                        process_token = true;
                     }
-
-                    //Check the number buffer
-                    if (strlen(number_buffer) > 0) {
-                        process_number = true;
+                    if (strlen(symbol_buffer) > 0) {
+                        process_symbol = true;
                     }
                 }
             }
@@ -289,7 +263,6 @@ char* next_token() {
         //Recognize the token
         if (process_token == true) {
             read_flag = false;
-            printf("TOKEN => Token Flag: %d     Number Flag: %d     Symbol Flag: %d\n", process_token, process_number, process_symbol);
 
             //Check Reserved word 
             token_num = check_reserved(token_buffer);
@@ -305,7 +278,6 @@ char* next_token() {
         //Recognize the number 
         if (process_number == true) {
             read_flag = false;
-            printf("NUMBER => Token Flag: %d     Number Flag: %d     Symbol Flag: %d\n", process_token, process_number, process_symbol);
 
             //Check Valid number 
             token_num = check_number(number_buffer);
@@ -321,7 +293,6 @@ char* next_token() {
         //Recognize the symbol
         if (process_symbol == true) {
             read_flag = false;
-            printf("SYMBOL => Token Flag: %d     Number Flag: %d     Symbol Flag: %d\n", process_token, process_number, process_symbol);
 
             //Check Reserved Symbol
             token_num = check_symbol(symbol_buffer);
@@ -361,6 +332,7 @@ char* next_token() {
                 fprintf(list_file, "%d   ", line_count);
                 //Reset comment flag
                 comment_flag = false;
+                process_symbol = false;
                 line_count += 1;
             } 
         }
